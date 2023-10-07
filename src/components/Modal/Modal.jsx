@@ -1,37 +1,34 @@
-import React, { Component } from 'react';
+import { useEffect } from 'react';
 import css from './Modal.module.css';
-export default class CustomModal extends Component {
-  componentDidMount() {
-    window.addEventListener('keydown', this.onKeyDown);
-  }
 
-  componentWillUnmount() {
-    window.removeEventListener('keydown', this.onKeyDown);
-  }
+export const CustomModal = ({ data, onClose }) => {
+  useEffect(() => {
+    const onKeyDown = event => {
+      if (event.code === 'Escape') {
+        onClose();
+      }
+    };
 
-  onKeyDown = event => {
-    console.log(event);
-    if (event.code === 'Escape') {
-      this.props.onClose();
-    }
-  };
+    window.addEventListener('keydown', onKeyDown);
 
-  onOverlayClick = event => {
-    console.log(event);
+    return () => {
+      window.removeEventListener('keydown', onKeyDown);
+    };
+  }, [onClose]);
+  const onOverlayClick = event => {
     if (event.currentTarget === event.target) {
-      this.props.onClose();
+      onClose();
     }
   };
-
-  render() {
-    return (
-      <div>
-        <div className={css.Overlay} onClick={this.onOverlayClick}>
-          <div className={css.Modal}>
-            <img src={this.props.data} alt="img" />
-          </div>
+  return (
+    <div>
+      <div className={css.Overlay} onClick={onOverlayClick}>
+        <div className={css.Modal}>
+          <img src={data} alt="img" />
         </div>
       </div>
-    );
-  }
-}
+    </div>
+  );
+};
+
+export default CustomModal;

@@ -1,118 +1,196 @@
-import React, { Component } from 'react';
+import { useEffect, useState } from 'react';
 import { ImageGalleryItem } from './ImageGalleryItem';
 import css from './ImageGallery.module.css';
 import { fetchSerchImages } from 'services/api';
 
-import CustomModal from 'components/Modal/Modal';
+import { CustomModal } from 'components/Modal/Modal';
 import { Button } from 'components/Button/Button';
 import { Loader } from 'components/Loader/Loader';
 
-export default class ImageGallery extends Component {
-  state = {
-    images: [],
-    loading: false,
-    totalHits: 1,
-    error: null,
-    page: 1,
-    per_page: 12,
-    modal: {
-      isOpen: false,
-      data: null,
-    },
+export const ImageGallery = ({ searchName }) => {
+  const [images, setImages] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [totalHits, setTotalHits] = useState(1);
+  const [error, setError] = useState(null);
+  const [page, setPage] = useState(1);
+  const [per_page] = useState(12);
+  const [modal, setModal] = useState({
+    isOpen: false,
+    data: null,
+  });
+
+
+  useEffect(() => {
+    if (!searchName) {
+      setPage(1);
+      setImages([]);
+      setError(null);
+    }
+  }, [searchName]);
+
+  useEffect(() => {
     
-  };
-
-  componentDidUpdate(prevProps, prevState) {
-    if (prevProps.searchName !== this.props.searchName) {
-      this.setState({ page: 1, images: [], error: null });
-    }
-    if (
-      prevProps.searchName !== this.props.searchName ||
-      this.state.page !== prevState.page
-    ) {
-      this.fetchImageByQuery();
-    }
-  }
-
-  fetchImageByQuery = async () => {
+    const fetchImageByQuery = async () => {
     try {
-      this.setState({ loading: true });
-      const { searchName } = this.props;
-      const { page, per_page,  } = this.state;
+      setLoading(true);
       const requestImages = await fetchSerchImages(searchName, page, per_page);
-console.log(requestImages.totalHits)
-      this.setState(({ images: prevData, totalHits}) => ({
-        images: [...prevData, ...requestImages.hits],
-        totalHits: requestImages.totalHits
-      }));
-     
-      console.log(this.state.totalHits)
+      setImages((prevData) => [...prevData, ...requestImages.hits]);
+      setTotalHits(requestImages.totalHits);
+
       if (requestImages.total === 0) {
         throw new Error('No images matching your request');
       }
     } catch (error) {
-      this.setState({ error: error.message });
+      setError(error.message);
     } finally {
-      this.setState({ loading: false });
+      setLoading(false);
     }
-  };
- 
-  loadMoreImages = () => {
-    this.setState(prevState => ({ page: prevState.page + 1 }));
+    };
+    fetchImageByQuery()
+    }, [searchName, page, per_page]);
+
+  
+  const loadMoreImages = () => {
+    setPage((prevPage) => prevPage + 1);
   };
 
-  onOpenModal = modalData => {
-    this.setState({
-      modal: {
-        isOpen: true,
-        data: modalData,
-      },
+  const onOpenModal = (modalData) => {
+    setModal({
+      isOpen: true,
+      data: modalData,
     });
   };
 
-  onCloseModal = () => {
-    this.setState({
-      modal: {
-        isOpen: false,
-        data: null,
-      },
+  const onCloseModal = () => {
+    setModal({
+      isOpen: false,
+      data: null,
     });
   };
 
-  render() {
-    return (
-      <>
-        {this.state.error && <h1>{this.state.error}</h1>}
+  return (
+    <>
+      {error && <h1>{error}</h1>}
 
-        {this.state.loading && <Loader />}
-        {this.state.images && (
-          <>
-            <ul className={css.ImageGallery}>
-              {this.state.images.map(
-                ({ id, webformatURL, largeImageURL, user }) => (
-                  <ImageGalleryItem
-                    onOpenModal={this.onOpenModal}
-                    key={id}
-                    url={webformatURL}
-                    largeUrl={largeImageURL}
-                    user={user}
-                  />
-                )
-              )}
-            </ul>
-            {this.state.images.length > 0 &&
-              this.state.page < Math.ceil(this.state.totalHits / 12) && (
-                <Button onClick={this.loadMoreImages} />
-              )}
-            {this.state.modal.isOpen && (
-              <CustomModal
-                data={this.state.modal.data}
-                onClose={this.onCloseModal}
+      {loading && <Loader />}
+      {images && (
+        <>
+          <ul className={css.ImageGallery}>
+            {images.map(({ id, webformatURL, largeImageURL, user }) => (
+              <ImageGalleryItem
+                onOpenModal={onOpenModal}
+                key={id}
+                url={webformatURL}
+                largeUrl={largeImageURL}
+                user={user}
               />
-            )}
-          </>
-        )}
-      </>
-    );
-  }
-}
+            ))}
+          </ul>
+          {images.length > 0 && page < Math.ceil(totalHits / 12) && (
+            <Button onClick={loadMoreImages} />
+          )}
+          {modal.isOpen && (
+            <CustomModal data={modal.data} onClose={onCloseModal} />
+          )}
+        </>
+      )}
+    </>
+  );
+};
+
+// import { useEffect, useState } from 'react';
+// import { ImageGalleryItem } from './ImageGalleryItem';
+// import css from './ImageGallery.module.css';
+// import { fetchSerchImages } from 'services/api';
+
+// import CustomModal from 'components/Modal/Modal';
+// import { Button } from 'components/Button/Button';
+// import { Loader } from 'components/Loader/Loader';
+
+// export const ImageGallery = ({ searchName }) => {
+//   const [images, setImages] = useState(null); // Initialize as null
+//   const [loading, setLoading] = useState(true); // Initialize as true
+//   const [totalHits, setTotalHits] = useState(1);
+//   const [error, setError] = useState(null);
+//   const [page, setPage] = useState(1);
+//   const [per_page] = useState(12);
+//   const [modal, setModal] = useState({
+//     isOpen: false,
+//     data: null,
+//   });
+
+//   useEffect(() => {
+//     if (searchName !== '') {
+//       setPage(1);
+//       setImages(null); // Reset to null
+//       setError(null);
+//       setLoading(true); // Set loading to true
+//     }
+//   }, [searchName]);
+
+//   useEffect(() => {
+//     const fetchImageByQuery = async () => {
+//       try {
+//         const requestImages = await fetchSerchImages(searchName, page, per_page);
+//         setImages((prevData) => [...(prevData || []), ...requestImages.hits]);
+//         setTotalHits(requestImages.totalHits);
+
+//         if (requestImages.total === 0) {
+//           throw new Error('No images matching your request');
+//         }
+//       } catch (error) {
+//         setError(error.message);
+//       } finally {
+//         setLoading(false);
+//       }
+//     };
+//     fetchImageByQuery();
+//   }, [searchName, page, per_page]);
+
+//   const loadMoreImages = () => {
+//     setPage((prevPage) => prevPage + 1);
+//   };
+
+//   const onOpenModal = (modalData) => {
+//     setModal({
+//       isOpen: true,
+//       data: modalData,
+//     });
+//   };
+
+//   const onCloseModal = () => {
+//     setModal({
+//       isOpen: false,
+//       data: null,
+//     });
+//   };
+
+//   return (
+//     <>
+//       {error && <h1>{error}</h1>}
+
+//       {loading && <Loader />}
+//       {images !== null && ( // Check if images is not null
+//         <>
+//           <ul className={css.ImageGallery}>
+//             {images.map(({ id, webformatURL, largeImageURL, user }) => (
+//               <ImageGalleryItem
+//                 onOpenModal={onOpenModal}
+//                 key={id}
+//                 url={webformatURL}
+//                 largeUrl={largeImageURL}
+//                 user={user}
+//               />
+//             ))}
+//           </ul>
+//           {images.length > 0 && page < Math.ceil(totalHits / 12) && (
+//             <Button onClick={loadMoreImages} />
+//           )}
+//           {modal.isOpen && (
+//             <CustomModal data={modal.data} onClose={onCloseModal} />
+//           )}
+//         </>
+//       )}
+//     </>
+//   );
+// };

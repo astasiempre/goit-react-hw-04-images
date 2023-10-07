@@ -1,48 +1,44 @@
-import { Component } from 'react';
+import { useState } from 'react';
 import css from './Searchbar.module.css';
 import { ImSearch } from 'react-icons/im';
 
-export default class Searchbar extends Component {
-  state = {
-    searchName: '',
+export const Searchbar = ({ onSubmit }) => {
+  const [searchName, setSearchName] = useState('');
+
+  const handleNameChange = event => {
+    setSearchName(event.currentTarget.value.toLowerCase());
   };
 
-  handleNameChange = event => {
-    this.setState({ searchName: event.currentTarget.value.toLowerCase() });
-  };
-
-  handleSubmit = event => {
+  const handleSubmit = event => {
     event.preventDefault();
-    if (this.state.searchName.trim() === '') {
+    if (searchName.trim() === '') {
       alert('Введите название');
       return;
     }
-    this.props.onSubmit(this.state.searchName);
-    this.setState({ searchName: '' });
+    onSubmit(searchName);
+    setSearchName('');
   };
 
-  render() {
-    return (
-      <header className={css.Searchbar}>
-        <form onSubmit={this.handleSubmit} className={css.SearchForm}>
-          <button type="submit" className={css.SearchFormButton}>
-            <span className={css.SearchFormButtonLabel}>
-              <ImSearch className={css.icon} />
-            </span>
-          </button>
+  return (
+    <header className={css.Searchbar}>
+      <form onSubmit={handleSubmit} className={css.SearchForm}>
+        <button type="submit" className={css.SearchFormButton}>
+          <span className={css.SearchFormButtonLabel}>
+            <ImSearch className={css.icon} />
+          </span>
+        </button>
 
-          <input
-            className={css.SearchFormInput}
-            name="catName"
-            type="text"
-            value={this.state.searchName}
-            autoComplete="off"
-            autoFocus
-            placeholder="Search images and photos"
-            onChange={this.handleNameChange}
-          />
-        </form>
-      </header>
-    );
-  }
-}
+        <input
+          className={css.SearchFormInput}
+          name="catName"
+          type="text"
+          value={searchName}
+          autoComplete="off"
+          autoFocus
+          placeholder="Search images and photos"
+          onChange={handleNameChange}
+        />
+      </form>
+    </header>
+  );
+};
