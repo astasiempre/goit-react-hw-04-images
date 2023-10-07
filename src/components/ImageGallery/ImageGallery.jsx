@@ -21,7 +21,7 @@ export const ImageGallery = ({ searchName }) => {
 
 
   useEffect(() => {
-    if (!searchName) {
+    if (searchName !== '') {
       setPage(1);
       setImages([]);
       setError(null);
@@ -29,8 +29,8 @@ export const ImageGallery = ({ searchName }) => {
   }, [searchName]);
 
   useEffect(() => {
-    
-    const fetchImageByQuery = async () => {
+    if (searchName) {
+      const fetchImageByQuery = async () => {
     try {
       setLoading(true);
       const requestImages = await fetchSerchImages(searchName, page, per_page);
@@ -46,7 +46,8 @@ export const ImageGallery = ({ searchName }) => {
       setLoading(false);
     }
     };
-    fetchImageByQuery()
+    fetchImageByQuery()}
+   
     }, [searchName, page, per_page]);
 
   
@@ -103,13 +104,13 @@ export const ImageGallery = ({ searchName }) => {
 // import css from './ImageGallery.module.css';
 // import { fetchSerchImages } from 'services/api';
 
-// import CustomModal from 'components/Modal/Modal';
+// import { CustomModal } from 'components/Modal/Modal';
 // import { Button } from 'components/Button/Button';
 // import { Loader } from 'components/Loader/Loader';
 
 // export const ImageGallery = ({ searchName }) => {
-//   const [images, setImages] = useState(null); // Initialize as null
-//   const [loading, setLoading] = useState(true); // Initialize as true
+//   const [images, setImages] = useState([]);
+//   const [loading, setLoading] = useState(false);
 //   const [totalHits, setTotalHits] = useState(1);
 //   const [error, setError] = useState(null);
 //   const [page, setPage] = useState(1);
@@ -118,22 +119,24 @@ export const ImageGallery = ({ searchName }) => {
 //     isOpen: false,
 //     data: null,
 //   });
+//   const [hasLoadedData, setHasLoadedData] = useState(false); // Add a flag to track data loading
 
 //   useEffect(() => {
 //     if (searchName !== '') {
 //       setPage(1);
-//       setImages(null); // Reset to null
+//       setImages([]);
 //       setError(null);
-//       setLoading(true); // Set loading to true
 //     }
 //   }, [searchName]);
 
 //   useEffect(() => {
 //     const fetchImageByQuery = async () => {
 //       try {
+//         setLoading(true);
 //         const requestImages = await fetchSerchImages(searchName, page, per_page);
-//         setImages((prevData) => [...(prevData || []), ...requestImages.hits]);
+//         setImages((prevData) => [...prevData, ...requestImages.hits]);
 //         setTotalHits(requestImages.totalHits);
+//         setHasLoadedData(true); // Set the flag to true when data is loaded
 
 //         if (requestImages.total === 0) {
 //           throw new Error('No images matching your request');
@@ -144,6 +147,7 @@ export const ImageGallery = ({ searchName }) => {
 //         setLoading(false);
 //       }
 //     };
+    
 //     fetchImageByQuery();
 //   }, [searchName, page, per_page]);
 
@@ -170,7 +174,7 @@ export const ImageGallery = ({ searchName }) => {
 //       {error && <h1>{error}</h1>}
 
 //       {loading && <Loader />}
-//       {images !== null && ( // Check if images is not null
+//       {hasLoadedData && images.length > 0 && ( // Check if data has loaded and images should be displayed
 //         <>
 //           <ul className={css.ImageGallery}>
 //             {images.map(({ id, webformatURL, largeImageURL, user }) => (
@@ -183,7 +187,7 @@ export const ImageGallery = ({ searchName }) => {
 //               />
 //             ))}
 //           </ul>
-//           {images.length > 0 && page < Math.ceil(totalHits / 12) && (
+//           {page < Math.ceil(totalHits / 12) && (
 //             <Button onClick={loadMoreImages} />
 //           )}
 //           {modal.isOpen && (
